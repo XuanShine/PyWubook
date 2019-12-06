@@ -144,3 +144,4 @@ if __name__ == "__main__":
         main()
     finally:
         server.release_token(token)
+        logging.info("Server disconnected")
