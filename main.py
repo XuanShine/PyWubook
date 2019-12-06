@@ -3,12 +3,15 @@ import time
 from pprint import pprint
 from datetime import datetime, timedelta
 import xmlrpc.client
+import logging
 
 from price import price_for_double_eco
 
 url = "https://wired.wubook.net/xrws/"
 server = xmlrpc.client.ServerProxy(url, verbose=False)
 
+# TODO: faire attention au fichier de logs
+logging.basicConfig(filename="main.log", level=logging.DEBUG, format="%(asctime)s -- %(name)s -- %(levelname)s -- %(message)s")
 
 # LOAD ID
 # File where identification is:
@@ -20,6 +23,7 @@ pkey = info["pkey"]
 lcode = info["lcode"]
 
 res, token = server.acquire_token(user, password, pkey)
+logging.info("Server connected")
 
 type_room = {"329039": "double economic",
              "329667": "double balcony",
@@ -111,6 +115,9 @@ def update_price_automatic(period=60):
     dfrom = dfrom_time.strftime("%d/%m/%Y")
     dto_time = dfrom_time + timedelta(days=period)
     dto = dto_time.strftime("%d/%m/%Y")
+
+    logging.info(f"Mise à jour en cours: (start: {dfrom}, end: {dto})")
+
     avail = get_avail(dfrom, dto)
     total_avail = sum_avail(avail)
 
@@ -125,6 +132,7 @@ def update_price_automatic(period=60):
     ignore["triple"] = update_price("329670", price_double_eco)  # prix triple fixée sur deco
 
     pprint(ignore)
+    logging.info(f"Dates ignorées: {ignore}")
     
 
 def main():
