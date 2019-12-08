@@ -11,7 +11,7 @@ n_room_increase = 5
 def graph_price():
     """Show a list of evolution of price"""
     prices = [base_price]
-    for i in range(n_rooms // n_room_increase + 1):
+    for _ in range(n_rooms // n_room_increase + 1):
         prices.append(prices[-1] * (1+increase*0.01))
     print(prices)
 
