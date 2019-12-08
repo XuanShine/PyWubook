@@ -127,7 +127,10 @@ def update_price_automatic(period=60):
     for date, avail in total_avail.items():
         price_double_eco[date] = round(price_for_double_eco(avail), 2)  # Détermine les nouvelles valeurs
         price_double_balcon[date] = round(price_double_eco[date] * 1.1, 2)  # Balcon à 10% plus élevé.
-        price_triple_eco[date] = round(price_double_eco[date] * 1.5, 2)  # Triple à 15% plus élevé que les doubles éco.
+        price_triple = round(price_double_eco[date] * 1.5, 2)  # Triple à 15% plus élevé que les doubles éco. Min: 54€
+        if price_triple < 54:
+            price_triple = 54
+        price_triple_eco[date] = price_triple
     ignore = dict()
     ignore["double_eco"] = update_price("329039", price_double_eco)  # deco
     ignore["double_balcon"] = update_price("329667", price_double_balcon)  # dblc
