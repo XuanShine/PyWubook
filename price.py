@@ -1,12 +1,12 @@
 import sys
 
-increase = 1  # in %
+increase = 5  # in %
 base_price = 47
 min_price = 44
 max_price = 100
 n_rooms = 30
 n_room_min_price = 3
-n_room_increase = 1
+n_room_increase = 5
 
 def graph_price():
     """Show a list of evolution of price"""
