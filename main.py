@@ -127,7 +127,7 @@ def update_price_automatic(period=60):
     for date, avail in total_avail.items():
         price_double_eco[date] = round(price_for_double_eco(avail), 2)  # Détermine les nouvelles valeurs
         price_double_balcon[date] = round(price_double_eco[date] * 1.1, 2)  # Balcon à 10% plus élevé.
-        price_triple = round(price_double_eco[date] * 1.5, 2)  # Triple à 15% plus élevé que les doubles éco. Min: 54€
+        price_triple = round(price_double_eco[date] * 1.15, 2)  # Triple à 15% plus élevé que les doubles éco. Min: 54€
         if price_triple < 54:
             price_triple = 54
         price_triple_eco[date] = price_triple
