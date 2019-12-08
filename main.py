@@ -134,7 +134,7 @@ def update_price_automatic(period=60):
     ignore = dict()
     ignore["double_eco"] = update_price("329039", price_double_eco)  # deco
     ignore["double_balcon"] = update_price("329667", price_double_balcon)  # dblc
-    ignore["triple"] = update_price("329670", price_double_eco)  # prix triple fixée sur deco
+    ignore["triple"] = update_price("329670", price_triple_eco)  # triple
 
     pprint(ignore)
     logging.info(f"Dates ignorées: {ignore}")
