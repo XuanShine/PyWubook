@@ -1,8 +1,8 @@
 import sys
 
 increase = 5  # in %
-base_price = 47
-min_price = 44
+base_price = 48
+min_price = 45
 max_price = 100
 n_rooms = 30
 n_room_min_price = 3
