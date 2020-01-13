@@ -99,7 +99,7 @@ def update_price(room_code, date_price):
     for i in range(len(triple_eco_prices)):
         if str(triple_eco_prices[i]).endswith(".99"):
             prices[i] = plan_prices[room_code][i]
-            date_tmp = (dfrom.strptime("%d/%m/%Y") + timedelta(days=i)).strftime("%d/%m/%Y")
+            date_tmp = (datetime.strptime(dfrom, "%d/%m/%Y") + timedelta(days=i)).strftime("%d/%m/%Y")
             ignore[date_tmp] = prices[i]
     
     # Call wubook function for update
