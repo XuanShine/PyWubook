@@ -1,5 +1,6 @@
 import pickle
 import time
+from dataclasses import dataclass
 from pprint import pprint
 from datetime import datetime, timedelta
 import xmlrpc.client
@@ -8,7 +9,7 @@ import logging
 from price import price_for_double_eco
 
 url = "https://wired.wubook.net/xrws/"
-server = xmlrpc.client.ServerProxy(url, verbose=False)
+
 
 # TODO: faire attention au fichier de logs
 logging.basicConfig(filename="main.log", level=logging.DEBUG, format="%(asctime)s -- %(name)s -- %(levelname)s -- %(message)s")
@@ -22,8 +23,6 @@ password = info["password"]
 pkey = info["pkey"]
 lcode = info["lcode"]
 
-res, token = server.acquire_token(user, password, pkey)
-logging.info("Server connected")
 
 type_room = {"329039": "double economic",
              "329667": "double balcony",
@@ -33,15 +32,15 @@ type_room = {"329039": "double economic",
              "407751": "triple balcony"
             }
 
-def get_avail(dfrom, dto):
+def get_avail(dfrom, dto, connection):
     """Get avail from dfrom to dto in the wubook server
     RETURN {<date>: {
                      <code_chambre>:<disponibilité>, ...}
             ...}"""
     
-    return_code, avail = server.fetch_rooms_values(token, lcode, dfrom, dto)
+    return_code, avail = connection.server.fetch_rooms_values(connection.token, lcode, dfrom, dto)
     if return_code != 0:
-        raise ConnectionError(avail)
+        raise ConnectionError(f"in get_avail({dfrom}, {dto}, connection) error: {avail}")
 
     dfrom_time = datetime.strptime(dfrom, "%d/%m/%Y")
     dto_time = datetime.strptime(dto, "%d/%m/%Y")
@@ -72,7 +71,7 @@ def sum_avail(avail, list_code=("329039", "329667", "329670")):
     return result
 
 
-def update_price(room_code, date_price):
+def update_price(room_code, date_price, connection):
     """Update new price in the wubook server
     If existing price in wubook "triple eco" ends with .99, then doesn’t modify price.
     INPUT date_price: {<date>: <price>, ..}
@@ -93,7 +92,10 @@ def update_price(room_code, date_price):
         raise Exception("Les dates ne sont pas continues pour mettre à jour les prix. Il doit manquer des dates: " + str(date_price_tuple))
 
     # Prevent price modification if triple eco endswith .99
-    _, plan_prices = server.fetch_plan_prices(token, lcode, 0, dfrom, dto)
+    return_code, plan_prices = connection.server.fetch_plan_prices(connection.token, lcode, 0, dfrom, dto)
+    if return_code != 0:
+        raise ConnectionError(f"in update_price({room_code}, {date_price}, connection), error: {avail}")
+
     triple_eco_prices = plan_prices["329670"]
     ignore = dict()  # to be return
     for i in range(len(triple_eco_prices)):
@@ -103,12 +105,12 @@ def update_price(room_code, date_price):
             ignore[date_tmp] = prices[i]
     
     # Call wubook function for update
-    server.update_plan_prices(token, lcode, 0, dfrom, {room_code: prices})
+    connection.server.update_plan_prices(connection.token, lcode, 0, dfrom, {room_code: prices})
     
     return ignore
 
 
-def update_price_automatic(period=60):
+def update_price_automatic(connection, period=60):
     """update price in the next period (in days)
     and print ignore dates"""
     dfrom_time = datetime.today()
@@ -118,7 +120,7 @@ def update_price_automatic(period=60):
 
     logging.info(f"Mise à jour en cours: (start: {dfrom}, end: {dto})")
 
-    avail = get_avail(dfrom, dto)
+    avail = get_avail(dfrom, dto, connection)
     total_avail = sum_avail(avail)
 
     price_double_eco = dict()
@@ -132,21 +134,31 @@ def update_price_automatic(period=60):
             price_triple = 54
         price_triple_eco[date] = price_triple
     ignore = dict()
-    ignore["double_eco"] = update_price("329039", price_double_eco)  # deco
-    ignore["double_balcon"] = update_price("329667", price_double_balcon)  # dblc
-    ignore["triple"] = update_price("329670", price_triple_eco)  # triple
+    ignore["double_eco"] = update_price("329039", price_double_eco, connection)  # deco
+    ignore["double_balcon"] = update_price("329667", price_double_balcon, connection)  # dblc
+    ignore["triple"] = update_price("329670", price_triple_eco, connection)  # triple
 
     pprint(ignore)
     logging.info(f"Dates ignorées: {ignore}")
     
 
+@dataclass
+class Connection:
+    server : None
+    token : str
+
+
 def main():
-    update_price_automatic()
-
-
-if __name__ == "__main__":
     try:
-        main()
+        server = xmlrpc.client.ServerProxy(url, verbose=False)
+        _, token = server.acquire_token(user, password, pkey)
+        logging.info("Server connected")
+        
+        update_price_automatic(Connection(server, token))
     finally:
         server.release_token(token)
         logging.info("Server disconnected")
+
+
+if __name__ == "__main__":
+    main()
