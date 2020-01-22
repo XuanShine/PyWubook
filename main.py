@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 import xmlrpc.client
 import logging
 
+import click
+
 from price import price_for_double_eco
 
 url = "https://wired.wubook.net/xrws/"
@@ -148,13 +150,15 @@ class Connection:
     token : str
 
 
-def main():
+@click.command()
+@click.option("--days", default=60, help="Nombre de jour à mettre à jour.")
+def main(days):
     try:
         server = xmlrpc.client.ServerProxy(url, verbose=False)
         _, token = server.acquire_token(user, password, pkey)
         logging.info("Server connected")
         
-        update_price_automatic(Connection(server, token))
+        update_price_automatic(period=days, connection=Connection(server, token))
     finally:
         server.release_token(token)
         logging.info("Server disconnected")
