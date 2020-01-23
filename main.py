@@ -16,7 +16,6 @@ from datetime import datetime, timedelta
 import xmlrpc.client
 import logging
 
-import click
 
 from price import price_for_double_eco
 
