@@ -191,5 +191,5 @@ if __name__ == "__main__":
     from docopt import docopt
 
     arguments = docopt(__doc__, version="1.0")
-    days = int(args.get("<days>", 60))
+    days = int(arguments.get("<days>", 60))
     main(days)
