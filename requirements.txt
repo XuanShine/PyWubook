@@ -22,7 +22,6 @@ Kivy==1.11.1
 Kivy-Garden==0.1.4
 lazy-object-proxy==1.4.3
 mccabe==0.6.1
-menuinst==1.4.16
 more-itertools==7.2.0
 packaging==19.2
 parso==0.5.1
