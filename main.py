@@ -98,28 +98,40 @@ def update_price(room_code, date_price, connection):
     days = len(date_price_tuple) - 1  # On exclu le dernier jour.
     dfrom = date_price_tuple[0][0]
     dto = (datetime.strptime(dfrom, "%d/%m/%Y") + timedelta(days=days)).strftime("%d/%m/%Y")
-    prices = [price for _, price in date_price_tuple]
+    prices = [price for _, price in date_price_tuple]  # prices = [price1, price2, ...]
 
     if date_price_tuple[-1][0] != dto:
         raise Exception("Les dates ne sont pas continues pour mettre à jour les prix. Il doit manquer des dates: " + str(date_price_tuple))
 
     # Prevent price modification if triple eco endswith .99
+    # On récupère les prix sur wubook
     return_code, plan_prices = connection.server.fetch_plan_prices(connection.token, lcode, 0, dfrom, dto)
     if return_code != 0:
         raise ConnectionError(f"in update_price({room_code}, {date_price}, connection), error: {avail}")
 
-    triple_eco_prices = plan_prices["329670"]
-    ignore = dict()  # to be return
+    # On détermine les prix qui vont être modifiés
+    actual_room_prices = plan_prices[room_code]
+    modifs = dict()  # ne sert qu’à informer de ce qui a été modifié
+    for i in range(len(actual_room_prices)):
+        if prices[i] != actual_room_prices[i]:
+            date_tmp = (datetime.strptime(dfrom, "%d/%m/%Y") + timedelta(days=i)).strftime("%d/%m/%Y")
+            modifs[date_tmp] = prices[i]
+
+    # On évite de modifier les prix dont la triple éco fini par .99
+    triple_eco_prices = plan_prices["329670"]  # : [price1, price2, ...]
+    ignore = dict()  # ne sert qu’à informer de ce qui a été ignoré
     for i in range(len(triple_eco_prices)):
         if str(triple_eco_prices[i]).endswith(".99"):
             prices[i] = plan_prices[room_code][i]
             date_tmp = (datetime.strptime(dfrom, "%d/%m/%Y") + timedelta(days=i)).strftime("%d/%m/%Y")
             ignore[date_tmp] = prices[i]
+            # on supprime ce qui a été modifié dans modifs
+            modifs.pop(date_tmp, None)
     
     # Call wubook function for update
     connection.server.update_plan_prices(connection.token, lcode, 0, dfrom, {room_code: prices})
     
-    return ignore
+    return ignore, modifs
 
 
 def update_price_automatic(connection, period=60):
@@ -146,12 +158,15 @@ def update_price_automatic(connection, period=60):
             price_triple = 54
         price_triple_eco[date] = price_triple
     ignore = dict()
-    ignore["double_eco"] = update_price("329039", price_double_eco, connection)  # deco
-    ignore["double_balcon"] = update_price("329667", price_double_balcon, connection)  # dblc
-    ignore["triple"] = update_price("329670", price_triple_eco, connection)  # triple
+    modifs = dict()
+    ignore["double_eco"], modifs["double_eco"] = update_price("329039", price_double_eco, connection)  # deco
+    ignore["double_balcon"], modifs["double_balcon"] = update_price("329667", price_double_balcon, connection)  # dblc
+    ignore["triple"], modifs["triple"] = update_price("329670", price_triple_eco, connection)  # triple
 
-    pprint(ignore)
+    pprint(f"Dates ignorées: {ignore}")
+    pprint(f"Dates modifiées: {modifs}")
     logging.info(f"Dates ignorées: {ignore}")
+    logging.info(f"Dates modifiées: {modifs}")
     
 
 @dataclass
