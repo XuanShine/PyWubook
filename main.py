@@ -1,3 +1,12 @@
+"""Mettre à jour automatiquement les prix WuBook.
+
+Usage:
+    main.py <days>
+
+Options:
+    -h --help
+    --version
+"""
 import os
 import pickle
 import time
@@ -152,8 +161,6 @@ class Connection:
     token : str
 
 
-@click.command()
-@click.option("--days", default=60, help="Nombre de jour à mettre à jour.")
 def main(days):
     try:
         server = xmlrpc.client.ServerProxy(url, verbose=False)
@@ -167,4 +174,8 @@ def main(days):
 
 
 if __name__ == "__main__":
-    main()
+    from docopt import docopt
+
+    arguments = docopt(__doc__, version="1.0")
+    days = int(args.get("<days>", 60))
+    main(days)
