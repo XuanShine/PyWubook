@@ -8,7 +8,6 @@ cffi==1.13.0
 chardet==3.0.4
 Click==7.0
 colorama==0.4.1
-conda==4.3.16
 cryptography==2.8
 decorator==4.4.1
 docutils==0.15.2
@@ -18,8 +17,6 @@ ipython==7.10.1
 ipython-genutils==0.2.0
 isort==4.3.21
 jedi==0.15.1
-Kivy==1.11.1
-Kivy-Garden==0.1.4
 lazy-object-proxy==1.4.3
 mccabe==0.6.1
 more-itertools==7.2.0
@@ -31,7 +28,6 @@ prompt-toolkit==3.0.2
 py==1.8.0
 pycosat==0.6.3
 pycparser==2.19
-pygame==1.9.6
 Pygments==2.5.2
 pylint==2.4.4
 pyOpenSSL==19.0.0
