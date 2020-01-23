@@ -1,1 +1,4 @@
-dico = {"a": 1, "b": 2, "c": 3}
+from trash2 import a
+
+def f(x):
+    return a + 1
