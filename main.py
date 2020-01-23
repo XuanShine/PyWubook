@@ -1,3 +1,4 @@
+import os
 import pickle
 import time
 from dataclasses import dataclass
@@ -18,7 +19,8 @@ logging.basicConfig(filename="main.log", level=logging.DEBUG, format="%(asctime)
 
 # LOAD ID
 # File where identification is:
-with open("../id_pywubook.pkl", "rb") as f_in:
+logins_path = os.path.join(os.path.dirname(__file__), '..', "id_pywubook.pkl")
+with open(logins_path, "rb") as f_in:
     info = pickle.load(f_in)
 user = info["user"]
 password = info["password"]
