@@ -9,7 +9,6 @@ chardet==3.0.4
 Click==7.0
 colorama==0.4.1
 conda==4.3.16
-conda-package-handling==1.6.0
 cryptography==2.8
 decorator==4.4.1
 docutils==0.15.2
