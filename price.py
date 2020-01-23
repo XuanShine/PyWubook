@@ -1,6 +1,6 @@
 import sys
 
-increase = 5  # in %
+increase = 7  # in %
 base_price = 48
 min_price = 45
 max_price = 100
