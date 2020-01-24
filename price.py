@@ -1,8 +1,8 @@
 import sys
 
-increase = 7  # in %
-base_price = 48
-min_price = 45
+increase = 5  # in %
+base_price = 49
+min_price = 46
 max_price = 100
 n_rooms = 30
 n_room_min_price = 3
@@ -12,7 +12,7 @@ def graph_price():
     """Show a list of evolution of price"""
     prices = [base_price]
     for _ in range(n_rooms // n_room_increase + 1):
-        prices.append(prices[-1] * (1+increase*0.01))
+        prices.append(round(prices[-1] * (1+increase*0.01)))
     print(prices)
 
 def price_for_double_eco(total_avail):
