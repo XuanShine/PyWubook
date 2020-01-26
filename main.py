@@ -178,13 +178,19 @@ class Connection:
 def main(days):
     with xmlrpc.client.ServerProxy(url, verbose=False) as server:
         try:
-            _, token = server.acquire_token(user, password, pkey)
-            logging.info("Server connected")
+            returnCode, token = server.acquire_token(user, password, pkey)
+            if returnCode != 0:
+                logging.warning("Can’t connect to server")
+            else:
+                logging.info("Server connected")
             
-            update_price_automatic(period=days, connection=Connection(server, token))
+                update_price_automatic(period=days, connection=Connection(server, token))
         finally:
-            server.release_token(token)
-            logging.info("Server disconnected")
+            if returnCode != 0:
+                pass
+            else:
+                server.release_token(token)
+                logging.info("Server disconnected")
 
 
 if __name__ == "__main__":
