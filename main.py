@@ -185,6 +185,9 @@ def main(days):
                 logging.info("Server connected")
             
                 update_price_automatic(period=days, connection=Connection(server, token))
+        except Exception:
+            import traceback
+            logging.error(f"Exception dans la main fonction de PyWubook: {traceback.format_exc()}")
         finally:
             if returnCode != 0:
                 pass
