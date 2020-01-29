@@ -34,6 +34,7 @@ user = info["user"]
 password = info["password"]
 pkey = info["pkey"]
 lcode = info["lcode"]
+del info
 
 
 type_room = {"329039": "double economic",
@@ -179,6 +180,7 @@ def main(days):
     with xmlrpc.client.ServerProxy(url, verbose=False) as server:
         try:
             returnCode, token = server.acquire_token(user, password, pkey)
+            del password
             if returnCode != 0:
                 logging.warning("Can’t connect to server")
             else:
