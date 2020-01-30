@@ -31,7 +31,6 @@ logins_path = os.path.join(os.path.dirname(__file__), '..', "id_pywubook.pkl")
 with open(logins_path, "rb") as f_in:
     info = pickle.load(f_in)
 user = info["user"]
-password = info["password"]
 pkey = info["pkey"]
 lcode = info["lcode"]
 del info
@@ -179,6 +178,9 @@ class Connection:
 def main(days):
     with xmlrpc.client.ServerProxy(url, verbose=False) as server:
         try:
+            with open(logins_path, "rb") as f_in:
+                info = pickle.load(f_in)
+            password = info["password"]
             returnCode, token = server.acquire_token(user, password, pkey)
             del password
             if returnCode != 0:
