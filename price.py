@@ -6,7 +6,7 @@ min_price = 46
 max_price = 69
 n_rooms = 26
 n_room_min_price = 3
-n_room_increase = 5
+n_room_increase = 4
 
 def graph_price():
     """Show a list of evolution of price"""
