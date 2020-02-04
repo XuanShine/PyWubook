@@ -32,13 +32,30 @@ def price_for_double_eco(total_avail):
 
 def test_price_for_double_eco():
     """For
+    # TODO Tests need to be fix
         increase = 8  # in %
         base_price = 44
         min_price = 39
         max_price = 100
         n_rooms = 30
         n_room_min_price = 2
+        n_room_increase = 3
     """
+    global increase
+    global base_price
+    global min_price
+    global max_price
+    global n_room
+    global n_room_min_price
+    global n_room_increase
+
+    increase = 8  # in %
+    base_price = 44
+    min_price = 39
+    max_price = 100
+    n_rooms = 30
+    n_room_min_price = 2
+    n_room_increase = 3
 
     assert price_for_double_eco(30) == 39
     assert price_for_double_eco(31) == 39

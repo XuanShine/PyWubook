@@ -73,6 +73,7 @@ def sum_avail(avail, list_code=("329039", "329667", "329670")):
             ... }
         voir fonction get_avail(dfrom, dto)
     RETURN {<date>: <total_disponibilité>, ...}"""
+    # TODO function can be test
     result = dict()
     for date, avail_day in avail.items():
         total_avail_day = 0
