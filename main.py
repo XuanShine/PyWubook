@@ -201,7 +201,7 @@ def main(days):
                     server.release_token(token)
                 except xmlrpc.client.ProtocolError as e:
                     logging.warning("ProtocolError while realeasing token from wubook server: \n{e}")
-                finally
+                else:
                     logging.info("Server disconnected")
 
 
