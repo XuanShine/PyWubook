@@ -194,11 +194,15 @@ def main(days):
             import traceback
             logging.error(f"Exception dans la main fonction de PyWubook: {traceback.format_exc()}")
         finally:
-            if returnCode != 0:
+            if returnCode != 0:  # N’a pas pu se connecter au serveur
                 pass
             else:
-                server.release_token(token)
-                logging.info("Server disconnected")
+                try:
+                    server.release_token(token)
+                except xmlrpc.client.ProtocolError as e:
+                    logging.warning("ProtocolError while realeasing token from wubook server: \n{e}")
+                finally
+                    logging.info("Server disconnected")
 
 
 if __name__ == "__main__":
