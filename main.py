@@ -72,7 +72,7 @@ def sum_avail(avail, list_code=("329039", "329667", "329670")):
     INPUT: {<date>: {<code_chambre>: <disponibilité, ...},
             ... }
         voir fonction get_avail(dfrom, dto)
-    RETURN {<date>: <total_disponibilité>, ...}"""
+    RETURN {<date>: <total_disponibilité>, ...} <date>: dd/mm/yyyy"""
     # TODO function can be test
     result = dict()
     for date, avail_day in avail.items():
@@ -152,7 +152,7 @@ def update_price_automatic(connection, period=60):
     price_double_balcon = dict()
     price_triple_eco = dict()
     for date, avail in total_avail.items():
-        price_double_eco[date] = round(price_for_double_eco(avail), 2)  # Détermine les nouvelles valeurs
+        price_double_eco[date] = round(price_for_double_eco(avail, date), 2)  # Détermine les nouvelles valeurs
         price_double_balcon[date] = round(price_double_eco[date] * 1.1, 2)  # Balcon à 10% plus élevé.
         price_triple = round(price_double_eco[date] * 1.15, 2)  # Triple à 15% plus élevé que les doubles éco. Min: 54€
         if price_triple < 54:

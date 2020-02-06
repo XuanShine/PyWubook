@@ -2,11 +2,27 @@ import sys
 
 increase = 5  # in %
 base_price = 49
-min_price = 46
+min_price = 47
 max_price = 69
 n_rooms = 26
 n_room_min_price = 3
 n_room_increase = 4
+
+special_dates = {  # augmentation en % : 50% => 50
+    "21/02/2020" : 5,
+    "22/02/2020" : 10,  # Rallye 2 CV
+    "23/02/2020" : 5,
+
+    "03/03/2020" : 10,  # Événement inconnu
+
+    "07/03/2020" : 10,  # duathlon Grasse
+
+
+}
+
+def calcul_price(date, price_init):
+    return price_init
+
 
 def graph_price():
     """Show a list of evolution of price"""
@@ -15,8 +31,9 @@ def graph_price():
         prices.append(round(prices[-1] * (1+increase*0.01)))
     print(prices)
 
-def price_for_double_eco(total_avail):
-    """ Return the suggest price for a double eco according to total_avail """
+def price_for_double_eco(total_avail, date=None):
+    """ Return the suggest price for a double eco according to total_avail 
+    can be also according to <date>: dd/mm/yyyy"""
     if total_avail > n_rooms - n_room_min_price:
         return min_price
     elif total_avail <= 0:
@@ -27,8 +44,17 @@ def price_for_double_eco(total_avail):
         prices.append(prices[-1] * (1 + increase/100))
     
     i = (n_rooms - n_room_min_price - total_avail) // n_room_increase  # indice de l’augmentation
+    
+    if date:
+        if date in special_dates:
+            calculated_price = prices[i] * (1 + special_dates[date]/100)
+        else:
+            calculated_price = calcul_price(date, prices[i])
+    else:
+        calculated_price = prices[i]
 
-    return prices[i]
+    assert calculated_price >= min_price
+    return calculated_price
 
 def test_price_for_double_eco():
     """For
