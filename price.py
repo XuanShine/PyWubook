@@ -3,14 +3,6 @@ import math
 from dataclasses import dataclass
 from datetime import datetime
 
-increase = 5  # in %
-base_price = 49
-min_price = 47
-max_price = 69
-n_rooms = 26
-n_room_min_price = 3
-n_room_increase = 4
-
 special_dates = {  # augmentation en % : 50% => 50
     "21/02/2020" : 5,
     "22/02/2020" : 10,  # Rallye 2 CV
@@ -90,7 +82,7 @@ def graph_price(rate):
 def price_for_double_eco(total_avail, date:str=None):
     """ Return the suggest price for a double eco according to total_avail 
     can be also according to <date>: dd/mm/yyyy"""
-    dt_date = datetime.strptime(date, "%d/%M/%Y")
+    dt_date = datetime.strptime(date, "%d/%m/%Y")
     switch_rate = {
         1: Rate(n_rooms=25, n_room_increase=2, min_price=44, increase=10, max_price=None),  # [44, 48, 52, 57, 62, 68, 74, 81, 89]
         2: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=5, max_price=None),  # [47, 49, 51, 53, 55, 57, 59, 61, 64, 67, 70, 73, 76]
