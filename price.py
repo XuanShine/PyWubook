@@ -59,7 +59,8 @@ def calcul_price(total_avail: int, rate: Rate=None, add_percent: float=0):
                 prices.append(prices[-1] * (1 + rate.increase/100))
             
             i = (rate.n_rooms - total_avail) // rate.n_room_increase  # indice de l’augmentation
-
+    if i < 0:
+        i = 0
     res = prices[i] * (1 + add_percent/100)
     assert res >= 40
     return math.floor(res)
