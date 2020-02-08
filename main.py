@@ -135,10 +135,13 @@ def update_price(room_code, date_price, connection):
     return ignore, modifs
 
 
-def update_price_automatic(connection, period=60):
+def update_price_automatic(connection, period=60, dstart=None):
     """update price in the next period (in days)
     and print ignore dates"""
-    dfrom_time = datetime.today()
+    if dstart:
+        dfrom_time = datetime.strptime(dstart, "%d/%m/%Y")
+    else:
+        dfrom_time = datetime.today()
     dfrom = dfrom_time.strftime("%d/%m/%Y")
     dto_time = dfrom_time + timedelta(days=period)
     dto = dto_time.strftime("%d/%m/%Y")
