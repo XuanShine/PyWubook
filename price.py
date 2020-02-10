@@ -44,22 +44,25 @@ low_season = Rate(
 # christmas_new_year = Rate()
 
 
-def calcul_price(total_avail: int, rate: Rate=None, add_percent: float=0):
-    rate = rate or low_season  # if not rate
-
+def explicit_rate(rate: Rate):
     if rate.max_price:
         n_rate = rate.n_rooms // rate.n_room_increase
         if rate.n_rooms % rate.n_room_increase == 0:  # évite les cas où le nombre de chambre peut être divisé par le nombre de chambre à augmenter ce qui faussent les résultats
            n_rate -= 1
-        rate.increase = (math.pow(rate.max_price/rate.min_price, 1 / (n_rate - 1)) - 1) * 100
+        rate.increase = (math.pow(rate.max_price/rate.min_price, 1 / n_rate) - 1) * 100
     
     if rate.increase:
-            prices = [rate.min_price]
-            for i in range(rate.n_rooms // rate.n_room_increase):
-                prices.append(prices[-1] * (1 + rate.increase/100))
-            
-            i = (rate.n_rooms - total_avail) // rate.n_room_increase  # indice de l’augmentation
-    if i < 0:
+        prices = [rate.min_price]
+        for i in range(rate.n_rooms // rate.n_room_increase):
+            prices.append(prices[-1] * (1 + rate.increase/100))
+    return prices
+
+
+def calcul_price(total_avail: int, rate: Rate=None, add_percent: float=0):
+    rate = rate or low_season  # if not rate
+    prices = explicit_rate(rate)
+    i = (rate.n_rooms - total_avail) // rate.n_room_increase  # indice de l’augmentation
+    if i < 0:  # if rate.n_rooms < total_avail
         i = 0
     res = prices[i] * (1 + add_percent/100)
     assert res >= 40
@@ -68,36 +71,26 @@ def calcul_price(total_avail: int, rate: Rate=None, add_percent: float=0):
 
 def graph_price(rate):
     """Show a list of evolution of price"""
-    if rate.max_price:
-        n_rate = rate.n_rooms // rate.n_room_increase
-        if rate.n_rooms % rate.n_room_increase == 0:
-           n_rate -= 1
-        rate.increase = (math.pow(rate.max_price/rate.min_price, 1 / n_rate) - 1) * 100
-    
-    if rate.increase:
-            prices = [rate.min_price]
-            for i in range(rate.n_rooms // rate.n_room_increase):
-                prices.append(math.floor(prices[-1] * (1 + rate.increase/100)))
-    print(prices)
+    prices = explicit_rate(rate)
+    print(*map(math.floor, prices))
 
 def price_for_double_eco(total_avail, date:str=None):
     """ Return the suggest price for a double eco according to total_avail 
     can be also according to <date>: dd/mm/yyyy"""
     dt_date = datetime.strptime(date, "%d/%m/%Y")
     switch_rate = {
-        1: Rate(n_rooms=25, n_room_increase=2, min_price=44, increase=10, max_price=None),  # [44, 48, 52, 57, 62, 68, 74, 81, 89]
-        2: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=74),  # [47, 49, 51, 53, 55, 57, 59, 61, 64, 67, 70, 73, 76]
-        3: Rate(n_rooms=25, n_room_increase=2, min_price=44, increase=5, max_price=None),  # [44, 46, 48, 50, 52, 54, 56, 58, 60, 63, 66, 69, 72]
-        4: Rate(n_rooms=25, n_room_increase=4, min_price=53, increase=6, max_price=None),  # [53, 56, 59, 62, 65, 68, 72, 76, 80]
-        5: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=74),  # [54, 56, 58, 60, 62, 64, 66, 68, 70]
-        6: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # [54, 57, 60, 63, 66, 69, 72, 76, 80]
-        7: Rate(n_rooms=25, n_room_increase=4, min_price=59, increase=None, max_price=99),
-        8: Rate(n_rooms=25, n_room_increase=4, min_price=74, increase=None, max_price=114),
-        9: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),
-        10: Rate(n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=64),
-        11: Rate(n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=64),
-        12: Rate(n_rooms=25, n_room_increase=3, min_price=44, increase=None, max_price=64),
-        # rate.increase = (math.pow(rate.max_price/rate.min_price, 1 / n_rate) - 1) * 100
+        1: Rate(n_rooms=25, n_room_increase=2, min_price=44, increase=None, max_price=74),  # 44 48 53 58 64 70 77 85 94 103 114 125 138
+        2: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=74),  # 47 48 50 52 54 56 58 61 63 66 68 71 74
+        3: Rate(n_rooms=25, n_room_increase=2, min_price=44, increase=5, max_price=None),   # 44 46 48 50 53 56 58 61 65 68 71 75 79
+        4: Rate(n_rooms=25, n_room_increase=4, min_price=53, increase=6, max_price=None),   # 53 56 59 63 66 70 75
+        5: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=74),  # 54 56 59 63 66 70 74
+        6: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # 54 58 62 67 72 78 84
+        7: Rate(n_rooms=25, n_room_increase=4, min_price=59, increase=None, max_price=99),  # 59 64 70 76 83 90 98
+        8: Rate(n_rooms=25, n_room_increase=4, min_price=74, increase=None, max_price=114), # 74 79 85 91 98 106 114
+        9: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # 54 58 62 67 72 78 84
+        10: Rate(n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=64), # 44 46 49 53 56 60 63
+        11: Rate(n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=64), # 44 46 49 53 56 60 63
+        12: Rate(n_rooms=25, n_room_increase=3, min_price=44, increase=None, max_price=64), # 44 46 48 50 53 55 58 61 63
     }
     rate = switch_rate.get(dt_date.month, low_season)
     # TODO: gestion des dates spéciaux
