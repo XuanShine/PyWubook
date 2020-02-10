@@ -86,7 +86,7 @@ def price_for_double_eco(total_avail, date:str=None):
     dt_date = datetime.strptime(date, "%d/%m/%Y")
     switch_rate = {
         1: Rate(n_rooms=25, n_room_increase=2, min_price=44, increase=10, max_price=None),  # [44, 48, 52, 57, 62, 68, 74, 81, 89]
-        2: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=5, max_price=None),  # [47, 49, 51, 53, 55, 57, 59, 61, 64, 67, 70, 73, 76]
+        2: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=69),  # [47, 49, 51, 53, 55, 57, 59, 61, 64, 67, 70, 73, 76]
         3: Rate(n_rooms=25, n_room_increase=2, min_price=44, increase=5, max_price=None),  # [44, 46, 48, 50, 52, 54, 56, 58, 60, 63, 66, 69, 72]
         4: Rate(n_rooms=25, n_room_increase=4, min_price=53, increase=6, max_price=None),  # [53, 56, 59, 62, 65, 68, 72, 76, 80]
         5: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=74),  # [54, 56, 58, 60, 62, 64, 66, 68, 70]
