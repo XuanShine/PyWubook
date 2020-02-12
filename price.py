@@ -79,9 +79,9 @@ def price_for_double_eco(total_avail, date:str=None):
     can be also according to <date>: dd/mm/yyyy"""
     dt_date = datetime.strptime(date, "%d/%m/%Y")
     switch_rate = {
-        1: Rate(n_rooms=25, n_room_increase=2, min_price=44, increase=None, max_price=74),  # 44 48 53 58 64 70 77 85 94 103 114 125 138
-        2: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=74),  # 47 48 50 52 54 56 58 61 63 66 68 71 74
-        3: Rate(n_rooms=25, n_room_increase=2, min_price=44, increase=5, max_price=None),   # 44 46 48 50 53 56 58 61 65 68 71 75 79
+        1: Rate(n_rooms=25, n_room_increase=2, min_price=44, increase=None, max_price=84),  # 44 48 53 58 64 70 77 85 94 103 114 125 138
+        2: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=84),  # 47 48 50 52 54 56 58 61 63 66 68 71 74
+        3: Rate(n_rooms=25, n_room_increase=2, min_price=44, increase=None, max_price=89),   # 44 46 48 50 53 56 58 61 65 68 71 75 79
         4: Rate(n_rooms=25, n_room_increase=4, min_price=53, increase=6, max_price=None),   # 53 56 59 63 66 70 75
         5: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=74),  # 54 56 59 63 66 70 74
         6: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # 54 58 62 67 72 78 84
