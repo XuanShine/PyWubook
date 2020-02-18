@@ -77,23 +77,31 @@ def graph_price(rate):
 def price_for_double_eco(total_avail, date:str=None):
     """ Return the suggest price for a double eco according to total_avail 
     can be also according to <date>: dd/mm/yyyy"""
-    dt_date = datetime.strptime(date, "%d/%m/%Y")
-    switch_rate = {
-        1: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=84),  # 44 48 53 58 64 70 77 85 94 103 114 125 138
-        2: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=84),  # 47 48 50 52 54 56 58 61 63 66 68 71 74
-        3: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=89),   # 44 46 48 50 53 56 58 61 65 68 71 75 79
-        4: Rate(n_rooms=25, n_room_increase=4, min_price=53, increase=6, max_price=None),   # 53 56 59 63 66 70 75
-        5: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=74),  # 54 56 59 63 66 70 74
-        6: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # 54 58 62 67 72 78 84
-        7: Rate(n_rooms=25, n_room_increase=4, min_price=59, increase=None, max_price=99),  # 59 64 70 76 83 90 98
-        8: Rate(n_rooms=25, n_room_increase=4, min_price=74, increase=None, max_price=114), # 74 79 85 91 98 106 114
-        9: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # 54 58 62 67 72 78 84
-        10: Rate(n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=64), # 44 46 49 53 56 60 63
-        11: Rate(n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=64), # 44 46 49 53 56 60 63
-        12: Rate(n_rooms=25, n_room_increase=3, min_price=44, increase=None, max_price=64), # 44 46 48 50 53 55 58 61 63
-    }
-    rate = switch_rate.get(dt_date.month, low_season)
-    # TODO: gestion des dates spéciaux
+    add_percent = 0
+    calcul_month_rate = True
+    if date in special_dates:
+        rate = special_dates[date]
+        if rate isinstance Rate:
+            calcul_month_rate = False
+        else:
+            add_percent = special_dates[date]
+    if calcul_month_rate:
+        dt_date = datetime.strptime(date, "%d/%m/%Y")
+        switch_rate = {
+            1: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=84),  # 44 48 53 58 64 70 77 85 94 103 114 125 138
+            2: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=84),  # 47 48 50 52 54 56 58 61 63 66 68 71 74
+            3: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=89),   # 44 46 48 50 53 56 58 61 65 68 71 75 79
+            4: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=4, min_price=53, increase=6, max_price=None),   # 53 56 59 63 66 70 75
+            5: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=74),  # 54 56 59 63 66 70 74
+            6: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # 54 58 62 67 72 78 84
+            7: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=4, min_price=59, increase=None, max_price=99),  # 59 64 70 76 83 90 98
+            8: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=4, min_price=74, increase=None, max_price=114), # 74 79 85 91 98 106 114
+            9: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # 54 58 62 67 72 78 84
+            10: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=64), # 44 46 49 53 56 60 63
+            11: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=64), # 44 46 49 53 56 60 63
+            12: Rate(add_percent=add_percent, n_rooms=25, n_room_increase=3, min_price=44, increase=None, max_price=64), # 44 46 48 50 53 55 58 61 63
+        }
+        rate = switch_rate.get(dt_date.month, low_season)
     return calcul_price(total_avail=total_avail, rate=rate)
 
 
