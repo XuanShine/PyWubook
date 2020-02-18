@@ -59,6 +59,7 @@ def explicit_rate(rate: Rate):
 
 
 def calcul_price(total_avail: int, rate: Rate=None, add_percent: float=0):
+    """add_percent : 50 -> 50%, ect.."""
     rate = rate or low_season  # if not rate
     prices = explicit_rate(rate)
     i = (rate.n_rooms - total_avail) // rate.n_room_increase  # indice de l’augmentation
@@ -81,10 +82,11 @@ def price_for_double_eco(total_avail, date:str=None):
     calcul_month_rate = True
     if date in special_dates:
         rate = special_dates[date]
-        if rate isinstance Rate:
+        if isinstance(rate, Rate):
             calcul_month_rate = False
         else:
             add_percent = special_dates[date]
+
     if calcul_month_rate:
         dt_date = datetime.strptime(date, "%d/%m/%Y")
         switch_rate = {
