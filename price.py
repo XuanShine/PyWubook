@@ -5,7 +5,7 @@ from datetime import datetime
 
 special_dates = {  # augmentation en % : 50% => 50
     "21/02/2020" : 5,
-    "22/02/2020" : 10,  # Rallye 2 CV
+    "22/02/2020" : 00,  # Rallye 2 CV
     "23/02/2020" : 5,
 
     "03/03/2020" : 10,  # Événement inconnu
