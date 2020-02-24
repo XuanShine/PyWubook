@@ -12,7 +12,10 @@ special_dates = {  # augmentation en % : 50% => 50
 
     "07/03/2020" : 10,  # duathlon Grasse
     # Fête du jasmin
-    # Fête de la rose
+    "06/05/2020": 10,
+    "07/05/2020": 10,
+    "08/05/2020": 10,
+    "09/05/2020": 10 # Fête de la rose
     # Concours de danse
     # ASA GRASSE
     # VTT dans Grasse
