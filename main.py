@@ -108,7 +108,7 @@ def update_price(room_code, date_price, connection):
     # On récupère les prix sur wubook
     return_code, plan_prices = connection.server.fetch_plan_prices(connection.token, lcode, 0, dfrom, dto)
     if return_code != 0:
-        raise ConnectionError(f"in update_price({room_code}, {date_price}, connection), return_code: {return_code}")
+        raise ConnectionError(f"in update_price({room_code}, {date_price}, connection), error: {plan_prices}")
 
     # On détermine les prix qui vont être modifiés
     actual_room_prices = plan_prices[room_code]
