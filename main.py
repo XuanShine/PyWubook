@@ -214,3 +214,8 @@ if __name__ == "__main__":
     arguments = docopt(__doc__, version="1.0")
     days = int(arguments.get("[<days>]", 60))
     main(days)
+
+
+def test_sum_avail():
+    # TODO
+    pass
