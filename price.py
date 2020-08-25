@@ -15,8 +15,12 @@ special_dates = {  # augmentation en % : 50% => 50
     "06/05/2020": 10,
     "07/05/2020": 10,
     "08/05/2020": 10,
-    "09/05/2020": 10 # Fête de la rose
+    "09/05/2020": 10, # Fête de la rose
     # Concours de danse
+    "22/10/2020" : 10,
+    "23/10/2020" : 10,
+    "24/10/2020" : 10,
+    "25/10/2020" : 5,
     # ASA GRASSE
     # VTT dans Grasse
 
@@ -95,16 +99,16 @@ def price_for_double_eco(total_avail, date:str=None):
         switch_rate = {
             1: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=84),  # 44 48 53 58 64 70 77 85 94 103 114 125 138
             2: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=84),  # 47 48 50 52 54 56 58 61 63 66 68 71 74
-            3: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=89),   # 44 46 48 50 53 56 58 61 65 68 71 75 79
-            4: Rate(n_rooms=25, n_room_increase=4, min_price=53, increase=6, max_price=None),   # 53 56 59 63 66 70 75
+            3: Rate(n_rooms=25, n_room_increase=2, min_price=54, increase=None, max_price=89),   # 44 46 48 50 53 56 58 61 65 68 71 75 79
+            4: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=6, max_price=None),   # 53 56 59 63 66 70 75
             5: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=74),  # 54 56 59 63 66 70 74
             6: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # 54 58 62 67 72 78 84
-            7: Rate(n_rooms=25, n_room_increase=4, min_price=59, increase=None, max_price=99),  # 59 64 70 76 83 90 98
-            8: Rate(n_rooms=25, n_room_increase=4, min_price=74, increase=None, max_price=114), # 74 79 85 91 98 106 114
-            9: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # 54 58 62 67 72 78 84
-            10: Rate(n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=64), # 44 46 49 53 56 60 63
-            11: Rate(n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=64), # 44 46 49 53 56 60 63
-            12: Rate(n_rooms=25, n_room_increase=3, min_price=44, increase=None, max_price=64), # 44 46 48 50 53 55 58 61 63
+            7: Rate(n_rooms=25, n_room_increase=4, min_price=60, increase=None, max_price=99),  # 59 64 70 76 83 90 98
+            8: Rate(n_rooms=25, n_room_increase=4, min_price=80, increase=None, max_price=180), # 74 79 85 91 98 106 114
+            9: Rate(n_rooms=25, n_room_increase=4, min_price=70, increase=None, max_price=110),  # 54 58 62 67 72 78 84
+            10: Rate(n_rooms=25, n_room_increase=4, min_price=60, increase=None, max_price=90), # 44 46 49 53 56 60 63
+            11: Rate(n_rooms=25, n_room_increase=4, min_price=60, increase=None, max_price=90), # 44 46 49 53 56 60 63
+            12: Rate(n_rooms=25, n_room_increase=3, min_price=60, increase=None, max_price=90), # 44 46 48 50 53 55 58 61 63
         }
         rate = switch_rate.get(dt_date.month, low_season)
     return calcul_price(total_avail=total_avail, rate=rate, add_percent=add_percent)
