@@ -104,7 +104,7 @@ def price_for_double_eco(total_avail, date:str=None):
             5: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=74),  # 54 56 59 63 66 70 74
             6: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # 54 58 62 67 72 78 84
             7: Rate(n_rooms=25, n_room_increase=4, min_price=60, increase=None, max_price=99),  # 59 64 70 76 83 90 98
-            8: Rate(n_rooms=25, n_room_increase=4, min_price=80, increase=None, max_price=180), # 74 79 85 91 98 106 114
+            8: Rate(n_rooms=25, n_room_increase=4, min_price=70, increase=None, max_price=120), # 74 79 85 91 98 106 114
             9: Rate(n_rooms=25, n_room_increase=4, min_price=70, increase=None, max_price=110),  # 54 58 62 67 72 78 84
             10: Rate(n_rooms=25, n_room_increase=4, min_price=60, increase=None, max_price=90), # 44 46 49 53 56 60 63
             11: Rate(n_rooms=25, n_room_increase=4, min_price=60, increase=None, max_price=90), # 44 46 49 53 56 60 63
