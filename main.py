@@ -216,7 +216,7 @@ def main(days):
                 else:
                     logging.info("Server disconnected")
 
-def get_price_today():
+def get_prices_today():
     with xmlrpc.client.ServerProxy(url, verbose=False) as server:
         try:
             with open(logins_path, "rb") as f_in:
