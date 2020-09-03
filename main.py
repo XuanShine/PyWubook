@@ -216,7 +216,7 @@ def main(days):
                 else:
                     logging.info("Server disconnected")
 
-def get_price(room):
+def get_price_today():
     with xmlrpc.client.ServerProxy(url, verbose=False) as server:
         try:
             with open(logins_path, "rb") as f_in:
@@ -230,10 +230,9 @@ def get_price(room):
                 logging.info("Server connected")
 
                 dfrom = dto = datetime.now().strftime("%d/%m/%Y")
-                return_code, plan_prices = server.fetch_plan_prices(token, lcode, 141209, dfrom, dto, room_to_code[room])
+                return_code, plan_prices = server.fetch_plan_prices(token, lcode, 141209, dfrom, dto)
                 if return_code != 0:
                     raise ConnectionError(f"in get_price({room}), error: {plan_prices}")
-                price = round(plan_prices[room_to_code[room]][0])
         except Exception:
             import traceback
             logging.error(f"Exception dans la main fonction de PyWubook: {traceback.format_exc()}")
@@ -247,7 +246,7 @@ def get_price(room):
                     logging.warning("ProtocolError while realeasing token from wubook server: \n{e}")
                 else:
                     logging.info("Server disconnected")
-            return price
+            return plan_prices
 
 if __name__ == "__main__":
     from docopt import docopt
