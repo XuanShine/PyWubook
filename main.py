@@ -44,6 +44,15 @@ type_room = {"329039": "double economic",
              "407751": "triple balcony"
             }
 
+room_to_code = {"sstd": "405127",
+                "sblc": "405126",
+                "dstd": "329039",
+                "dblc": "329667",
+                "tstd": "329670",
+                "tblc": "407751",
+                "fblc": "469743"
+               }
+
 def get_avail(dfrom, dto, connection):
     """Get avail from dfrom to dto in the wubook server
     RETURN {<date>: {
@@ -207,6 +216,38 @@ def main(days):
                 else:
                     logging.info("Server disconnected")
 
+def get_price(room):
+    with xmlrpc.client.ServerProxy(url, verbose=False) as server:
+        try:
+            with open(logins_path, "rb") as f_in:
+                info = pickle.load(f_in)
+            password = info["password"]
+            returnCode, token = server.acquire_token(user, password, pkey)
+            del password
+            if returnCode != 0:
+                logging.warning("Can’t connect to server")
+            else:
+                logging.info("Server connected")
+
+                dfrom = dto = datetime.now().strftime("%d/%m/%Y")
+                return_code, plan_prices = server.fetch_plan_prices(token, lcode, 141209, dfrom, dto, room_to_code[room])
+                if return_code != 0:
+                    raise ConnectionError(f"in get_price({room}), error: {plan_prices}")
+                price = round(plan_prices[room_to_code[room]][0])
+        except Exception:
+            import traceback
+            logging.error(f"Exception dans la main fonction de PyWubook: {traceback.format_exc()}")
+        finally:
+            if returnCode != 0:  # N’a pas pu se connecter au serveur
+                pass
+            else:
+                try:
+                    server.release_token(token)
+                except xmlrpc.client.ProtocolError as e:
+                    logging.warning("ProtocolError while realeasing token from wubook server: \n{e}")
+                else:
+                    logging.info("Server disconnected")
+            return price
 
 if __name__ == "__main__":
     from docopt import docopt
