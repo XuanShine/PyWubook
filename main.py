@@ -232,7 +232,7 @@ def get_prices_today():
                 dfrom = dto = datetime.now().strftime("%d/%m/%Y")
                 return_code, plan_prices = server.fetch_plan_prices(token, lcode, 141209, dfrom, dto)
                 if return_code != 0:
-                    raise ConnectionError(f"in get_price({room}), error: {plan_prices}")
+                    raise ConnectionError(f"in get_prices_today(), error: {plan_prices}")
         except Exception:
             import traceback
             logging.error(f"Exception dans la main fonction de PyWubook: {traceback.format_exc()}")
