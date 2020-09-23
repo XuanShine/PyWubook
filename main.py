@@ -17,7 +17,7 @@ import xmlrpc.client
 import logging
 
 
-from price import price_for_double_eco
+from price import price_for_double_eco, price_for_triple_eco
 
 url = "https://wired.wubook.net/xrws/"
 
@@ -165,8 +165,8 @@ def update_price_automatic(connection, period=60, dstart=None):
     price_triple_eco = dict()
     for date, avail in total_avail.items():
         price_double_eco[date] = round(price_for_double_eco(avail, date), 2)  # Détermine les nouvelles valeurs
-        price_double_balcon[date] = round(price_double_eco[date] * 1.1, 2)  # Balcon à 10% plus élevé.
-        price_triple = round(price_double_eco[date] * 1.15, 2)  # Triple à 15% plus élevé que les doubles éco. Min: 54€
+        price_double_balcon[date] = round(price_double_eco[date] * 1.15, 2)  # Balcon à 15% plus élevé.
+        price_triple = round(price_for_triple_eco(avail, date), 2)  # Triple à 15% plus élevé que les doubles éco. Min: 54€
         if price_triple < 54:
             price_triple = 54
         price_triple_eco[date] = price_triple
@@ -256,11 +256,11 @@ def get_prices_avail_today():
             return plan_prices, avails
 
 if __name__ == "__main__":
-    from docopt import docopt
+    # from docopt import docopt
 
-    arguments = docopt(__doc__, version="1.0")
-    days = int(arguments.get("[<days>]", 60))
-    # main(days)
+    # arguments = docopt(__doc__, version="1.0")
+    # days = int(arguments.get("[<days>]", 60))
+    main(30)
 
 
 def test_sum_avail():
