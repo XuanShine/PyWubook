@@ -1,0 +1,30 @@
+Hotel de la Poste:
+  url_expedia: ""
+  id_tripadvisor: "g1380878-d2184159"
+  name: Hotel de la Poste
+  short: la Poste
+Hotel Panorama:
+  url_expedia: ""
+  id_tripadvisor: "g187224-d219923"
+  name: Hotel Panorama
+  short: Panorama
+Campanile Grasse:
+  url_expedia: ""
+  id_tripadvisor: "g662774-d488551"
+  name: Campanile Grasse
+  short: Campanile
+Ibis Cannes Mouans Sartoux:
+  url_expedia: ""
+  id_tripadvisor: "g666506-d1071475"
+  name: Ibis Cannes Mouans Sartoux
+  short: IbisCannes
+Hotel Casabella:
+  url_expedia: ""
+  id_tripadvisor: "g666506-d6869362"
+  name: Hotel Casabella
+  short: casabella
+Hotel Best Western Elixir Grasse:
+  url_expedia: ""
+  id_tripadvisor: "g187224-d248537"
+  name: Best Western Grasse
+  short: bestwestern
