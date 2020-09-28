@@ -35,13 +35,17 @@ pkey = info["pkey"]
 lcode = info["lcode"]
 del info
 
+# différencier chambres "réelles" et chambres "virtuelles"
+REAL_ROOMS = {"329039", "329667", "329670", "407751", "469743", "469744"}
 
 type_room = {"329039": "double economic",
              "329667": "double balcony",
              "329670": "triple economic",
              "405126": "single balcony",
              "405127": "single economic",
-             "407751": "triple balcony"
+             "407751": "triple balcony",
+             "469743": "familiale",
+             "469744": "kichenette"
             }
 
 room_to_code = {"sstd": "405127",
@@ -50,7 +54,8 @@ room_to_code = {"sstd": "405127",
                 "dblc": "329667",
                 "tstd": "329670",
                 "tblc": "407751",
-                "fblc": "469743"
+                "fblc": "469743",
+                "ktch": "469744"
                }
 
 def get_avail(dfrom, dto, connection):
@@ -76,7 +81,7 @@ def get_avail(dfrom, dto, connection):
     return result
 
 
-def sum_avail(avail, list_code=("329039", "329667", "329670")):
+def sum_avail(avail, list_code=REAL_ROOMS):
     """Total des disponibilités par jour des chambres dans list_code.
     INPUT: {<date>: {<code_chambre>: <disponibilité, ...},
             ... }
@@ -93,7 +98,7 @@ def sum_avail(avail, list_code=("329039", "329667", "329670")):
     return result
 
 
-def update_price(room_code, date_price, connection):
+def update_price(room_code, date_price, connection, simulation=False):
     """Update new price in the wubook server
     If existing price in wubook "triple eco" ends with .99, then doesn’t modify price.
     INPUT date_price: {<date>: <price>, ..}
@@ -104,6 +109,7 @@ def update_price(room_code, date_price, connection):
     
     RETURN dates and prices that was not changed {<date>: <price>, ..} or None """
 
+    # Change de {<date>: <price>, ...} à {<date>: [<price1>, <price2>, ...], ...}
     date_price_tuple = list(sorted(date_price.items(), key=lambda dico: datetime.strptime(dico[0], "%d/%m/%Y")))
     days = len(date_price_tuple) - 1  # On exclu le dernier jour.
     dfrom = date_price_tuple[0][0]
@@ -139,12 +145,13 @@ def update_price(room_code, date_price, connection):
             modifs.pop(date_tmp, None)
     
     # Call wubook function for update
-    connection.server.update_plan_prices(connection.token, lcode, 0, dfrom, {room_code: prices})
+    if not simulation:
+        connection.server.update_plan_prices(connection.token, lcode, 0, dfrom, {room_code: prices})
     
     return ignore, modifs
 
 
-def update_price_automatic(connection, period=60, dstart=None):
+def update_price_automatic(connection, period=60, dstart=None, simulation=False):
     """update price in the next period (in days)
     and print ignore dates"""
     if dstart:
@@ -160,21 +167,23 @@ def update_price_automatic(connection, period=60, dstart=None):
     avail = get_avail(dfrom, dto, connection)
     total_avail = sum_avail(avail)
 
+    # Actuellement, changer uniquement dstd, dblc, tstd est suffisant.
     price_double_eco = dict()
     price_double_balcon = dict()
     price_triple_eco = dict()
     for date, avail in total_avail.items():
         price_double_eco[date] = round(price_for_double_eco(avail, date), 2)  # Détermine les nouvelles valeurs
         price_double_balcon[date] = round(price_double_eco[date] * 1.15, 2)  # Balcon à 15% plus élevé.
-        price_triple = round(price_for_triple_eco(avail, date), 2)  # Triple à 15% plus élevé que les doubles éco. Min: 54€
+        price_triple = round(price_for_triple_eco(avail, date), 2)
+        logging.debug(f"{date}: price_triple = {price_triple}")
         if price_triple < 54:
             price_triple = 54
         price_triple_eco[date] = price_triple
     ignore = dict()
     modifs = dict()
-    ignore["double_eco"], modifs["double_eco"] = update_price("329039", price_double_eco, connection)  # deco
-    ignore["double_balcon"], modifs["double_balcon"] = update_price("329667", price_double_balcon, connection)  # dblc
-    ignore["triple"], modifs["triple"] = update_price("329670", price_triple_eco, connection)  # triple
+    ignore["double_eco"], modifs["double_eco"] = update_price("329039", price_double_eco, connection, simulation=simulation)  # deco
+    ignore["double_balcon"], modifs["double_balcon"] = update_price("329667", price_double_balcon, connection, simulation=simulation)  # dblc
+    ignore["triple_eco"], modifs["triple_eco"] = update_price("329670", price_triple_eco, connection, simulation=simulation)  # triple
 
     pprint(f"Dates ignorées: {ignore}")
     pprint(f"Dates modifiées: {modifs}")
@@ -188,7 +197,7 @@ class Connection:
     token : str
 
 
-def main(days):
+def main(days, simulation=False):
     with xmlrpc.client.ServerProxy(url, verbose=False) as server:
         try:
             with open(logins_path, "rb") as f_in:
@@ -200,8 +209,7 @@ def main(days):
                 logging.warning("Can’t connect to server")
             else:
                 logging.info("Server connected")
-            
-                update_price_automatic(period=days, connection=Connection(server, token))
+                update_price_automatic(period=days, connection=Connection(server, token), simulation=simulation)
         except Exception:
             import traceback
             logging.error(f"Exception dans la main fonction de PyWubook: {traceback.format_exc()}")
@@ -216,9 +224,6 @@ def main(days):
                 else:
                     logging.info("Server disconnected")
 
-
-def get_prices_today():
-    raise Exception("Function name changed to get_prices_avail_today")
 
 def get_prices_avail_today():
     with xmlrpc.client.ServerProxy(url, verbose=False) as server:
@@ -260,7 +265,7 @@ if __name__ == "__main__":
 
     # arguments = docopt(__doc__, version="1.0")
     # days = int(arguments.get("[<days>]", 60))
-    main(30)
+    main(120, simulation=True)
 
 
 def test_sum_avail():
