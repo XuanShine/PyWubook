@@ -65,18 +65,18 @@ def min_price_month(month):
 
 
 switch_rate = {
-    # 1: Rate(n_rooms=25, n_room_increase=2, min_price=min_price_month(1), increase=None, max_price=84),  # 44 48 53 58 64 70 77 85 94 103 114 125 138
-    # 2: Rate(n_rooms=25, n_room_increase=2, min_price=min_price_month(2), increase=None, max_price=84),  # 47 48 50 52 54 56 58 61 63 66 68 71 74
-    # 3: Rate(n_rooms=25, n_room_increase=2, min_price=min_price_month(3), increase=None, max_price=89),   # 44 46 48 50 53 56 58 61 65 68 71 75 79
-    # 4: Rate(n_rooms=25, n_room_increase=4, min_price=min_price_month(4), increase=6, max_price=None),   # 53 56 59 63 66 70 75
-    # 5: Rate(n_rooms=25, n_room_increase=4, min_price=min_price_month(5), increase=None, max_price=74),  # 54 56 59 63 66 70 74
-    # 6: Rate(n_rooms=25, n_room_increase=4, min_price=min_price_month(6), increase=None, max_price=84),  # 54 58 62 67 72 78 84
-    # 7: Rate(n_rooms=25, n_room_increase=4, min_price=min_price_month(7), increase=None, max_price=99),  # 59 64 70 76 83 90 98
-    # 8: Rate(n_rooms=25, n_room_increase=4, min_price=min_price_month(8), increase=None, max_price=120), # 74 79 85 91 98 106 114
-    # 9: Rate(n_rooms=25, n_room_increase=4, min_price=min_price_month(9), increase=None, max_price=110),  # 54 58 62 67 72 78 84
-    # 10: Rate(n_rooms=25, n_room_increase=4, min_price=min_price_month(10), increase=None, max_price=90), # 44 46 49 53 56 60 63
-    # 11: Rate(n_rooms=25, n_room_increase=4, min_price=min_price_month(11), increase=None, max_price=90), # 44 46 49 53 56 60 63
-    # 12: Rate(n_rooms=25, n_room_increase=3, min_price=min_price_month(12), increase=None, max_price=90), # 44 46 48 50 53 55 58 61 63
+    1: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=84),  # 44 48 53 58 64 70 77 85 94 103 114 125 138
+    2: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=84),  # 47 48 50 52 54 56 58 61 63 66 68 71 74
+    3: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=89),   # 44 46 48 50 53 56 58 61 65 68 71 75 79
+    4: Rate(n_rooms=25, n_room_increase=4, min_price=53, increase=6, max_price=None),   # 53 56 59 63 66 70 75
+    5: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=74),  # 54 56 59 63 66 70 74
+    6: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=84),  # 54 58 62 67 72 78 84
+    7: Rate(n_rooms=25, n_room_increase=4, min_price=59, increase=None, max_price=99),  # 59 64 70 76 83 90 98
+    8: Rate(n_rooms=25, n_room_increase=4, min_price=74, increase=None, max_price=120), # 74 79 85 91 98 106 114
+    9: Rate(n_rooms=25, n_room_increase=4, min_price=54, increase=None, max_price=110),  # 54 58 62 67 72 78 84
+    10: Rate(n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=90), # 44 46 49 53 56 60 63
+    11: Rate(n_rooms=25, n_room_increase=4, min_price=44, increase=None, max_price=90), # 44 46 49 53 56 60 63
+    12: Rate(n_rooms=25, n_room_increase=3, min_price=44, increase=None, max_price=90), # 44 46 48 50 53 55 58 61 63
 }
 
 def explicit_rate(rate: Rate):
@@ -113,21 +113,26 @@ def graph_price(rate):
 def price_for_double_eco(total_avail, date:str=None):
     """ Return the suggest price for a double eco according to total_avail 
     can be also according to <date>: dd/mm/yyyy"""
-    # add_percent = 0
-    # calcul_month_rate = True
-    # if date in special_dates:
-    #     rate = special_dates[date]
-    #     if isinstance(rate, Rate):
-    #         calcul_month_rate = False
-    #     else:
-    #         add_percent = special_dates[date]
+    dt_date = datetime.strptime(date, "%d/%m/%Y")
 
-    # if calcul_month_rate:
-    #     dt_date = datetime.strptime(date, "%d/%m/%Y")
-    #     rate = switch_rate.get(dt_date.month, low_season)
-    # return calcul_price(total_avail=total_avail, rate=rate, add_percent=add_percent)
+    if date in special_dates:
+        ### Le prix selon les dates spéciaux.
+        rate = special_dates[date]
+        if isinstance(rate, Rate):
+            result_rate = calcul_price(total_avail=total_avail, rate=rate)
+        else:
+            rate = switch_rate.get(dt_date.month, low_season)
+            add_percent = special_dates[date]
+            result_rate = calcul_price(total_avail=total_avail, rate=rate, add_percent=add_percent)
+    else:
+        ### Déterminer le prix selon les TARIFS saisonniers
+        rate = switch_rate.get(dt_date.month, low_season)
+        result_rate = calcul_price(total_avail=total_avail, rate=rate)
+
+    ### Déterminer le prix selon les autres hôtels ###
     date_ = datetime.strptime(date, "%d/%m/%Y")
     prices_low = (cost("g1380878-d2184159", date_), cost(ibis_budget_mouans, date_), cost("g662774-d488551", date_))  # poste, ibis, campanile
+    price_best_western = cost("g187224-d248537", date_)
     logging.info(f"{date}: {prices_low}")
     price = max(min(price for price in prices_low if price != 0), 50)
     taux_occupation = 1 - total_avail/TOTAL_ROOMS
@@ -136,12 +141,24 @@ def price_for_double_eco(total_avail, date:str=None):
     elif taux_occupation < 0.6:  
         result = price
     elif taux_occupation < 1:
-        price_best_western = cost("g187224-d248537", date_)
         result = max(price_best_western, 90) * 0.85
     else:
-        price_best_western = cost("g187224-d248537", date_)
         result = max(price_best_western, 90)
-    assert result >= 50
+    
+    logging.info(f"prix rate, prix autres hotels: {result_rate} / {result}")
+    if date in special_dates:
+        res = max(result, result_rate)
+        assert res >= 40
+        return res
+    else:
+        if result == 0:
+            assert result_rate >= 40
+            return result_rate
+        else:
+            assert result >= 40
+            return result
+
+
     return result
 
 def price_for_triple_eco(total_avail, date:str=None):
@@ -149,8 +166,15 @@ def price_for_triple_eco(total_avail, date:str=None):
     can be also according to <date>: dd/mm/yyyy"""
     date_ = datetime.strptime(date, "%d/%m/%Y")
     price = cost("g666506-d1071475", date_)  # ibis
-    result = max(price, price_for_double_eco(total_avail, date))
-    assert result >= 50
+    logging.debug(f"{date_} : {price}")
+    if price == 0:
+        result = price_for_double_eco(total_avail, date) * 1.15
+    else:
+        result = price
+    assert result >= 40
+    if date in special_dates:
+        return result * 1.15
+
     return result
 
 
