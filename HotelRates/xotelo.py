@@ -15,7 +15,7 @@ def cost(hotel_key, date):
     except TypeError as e:
         return 0
     minCost  = min(data, key=(lambda site: site['rate']))
-    minCost = minCost['rate'] + minCost['tax']
+    minCost = (minCost['rate'] + minCost['tax']) * 0.8585  # conversion en euro
     return int(minCost)
 
     #!use res for testing as res.json
