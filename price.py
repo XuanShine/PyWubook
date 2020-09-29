@@ -6,7 +6,7 @@ from HotelRates.xotelo import get_price, ibis_budget_mouans, cost
 from statistics import mean
 import logging
 
-TOTAL_ROOMS = 18
+TOTAL_ROOMS = 27
 # TODO: server can change the availlability of TOTAL_ROOMS
 
 special_dates = {  # augmentation en % : 50% => 50
