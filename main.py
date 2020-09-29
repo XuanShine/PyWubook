@@ -175,6 +175,7 @@ def update_price_automatic(connection, period=60, dstart=None, simulation=False)
         price_double_eco[date] = round(price_for_double_eco(avail, date), 2)  # Détermine les nouvelles valeurs
         price_double_balcon[date] = round(price_double_eco[date] * 1.15, 2)  # Balcon à 15% plus élevé.
         price_triple = round(price_for_triple_eco(avail, date), 2)
+        logging.debug(f"{date}: price_double_eco = {price_double_eco[date]}")
         logging.debug(f"{date}: price_triple = {price_triple}")
         if price_triple < 54:
             price_triple = 54
@@ -265,8 +266,7 @@ if __name__ == "__main__":
 
     # arguments = docopt(__doc__, version="1.0")
     # days = int(arguments.get("[<days>]", 60))
-    main(120, simulation=True)
-
+    main(1, simulation=True)
 
 def test_sum_avail():
     # TODO

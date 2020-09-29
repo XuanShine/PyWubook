@@ -6,7 +6,8 @@ from HotelRates.xotelo import get_price, ibis_budget_mouans, cost
 from statistics import mean
 import logging
 
-TOTAL_ROOMS = 26
+TOTAL_ROOMS = 18
+# TODO: server can change the availlability of TOTAL_ROOMS
 
 special_dates = {  # augmentation en % : 50% => 50
     "21/02/2020" : 5,
@@ -133,7 +134,7 @@ def price_for_double_eco(total_avail, date:str=None):
     date_ = datetime.strptime(date, "%d/%m/%Y")
     prices_low = (cost("g1380878-d2184159", date_), cost(ibis_budget_mouans, date_), cost("g662774-d488551", date_))  # poste, ibis, campanile
     price_best_western = cost("g187224-d248537", date_)
-    logging.info(f"{date}: {prices_low}")
+    logging.info(f"{date}: {prices_low} (poste, ibis, campanile)")
     price = max(min(price for price in prices_low if price != 0), 50)
     taux_occupation = 1 - total_avail/TOTAL_ROOMS
     if taux_occupation < 0.3:  # < 10%
@@ -157,9 +158,6 @@ def price_for_double_eco(total_avail, date:str=None):
         else:
             assert result >= 40
             return result
-
-
-    return result
 
 def price_for_triple_eco(total_avail, date:str=None):
     """ Return the suggest price for a triple eco according to total_avail 
