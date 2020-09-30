@@ -164,11 +164,12 @@ def price_for_triple_eco(total_avail, date:str=None):
     can be also according to <date>: dd/mm/yyyy"""
     date_ = datetime.strptime(date, "%d/%m/%Y")
     price = cost("g666506-d1071475", date_)  # ibis
+    price_double_eco = price_for_double_eco(total_avail, date)
     logging.debug(f"{date_} : {price}")
     if price == 0:
-        result = price_for_double_eco(total_avail, date) * 1.15
+        result = price_double_eco * 1.15
     else:
-        result = price
+        result = max(price_double_eco, price)
     assert result >= 40
     if date in special_dates:
         return result * 1.15
