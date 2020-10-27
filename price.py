@@ -32,6 +32,10 @@ special_dates = {  # augmentation en % : 50% => 50
     # Marathon ?
     "07/11/2020": 20,
     # VTT dans Grasse
+    # ASA GRASSE 2021
+    "03/04/2021": 50,
+    # ASA GRASSE 2022
+    "02/04/2021": 50,
 
 }
 
