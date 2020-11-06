@@ -2,7 +2,9 @@ import requests
 from datetime import datetime, timedelta
 import httpx
 from requests.api import post
+from json.decoder import JSONDecodeError
 # import pandas as pd
+import logging
 
 
 def cost(hotel_key, date):
@@ -13,6 +15,10 @@ def cost(hotel_key, date):
     try:
         data = res.json()['result']['rates']
     except TypeError as e:
+        logging.error(e)
+        return 0
+    except JSONDecodeError as e:
+        logging.error(e)
         return 0
     minCost  = min(data, key=(lambda site: site['rate']))
     minCost = (minCost['rate'] + minCost['tax']) * 0.8585  # conversion en euro
