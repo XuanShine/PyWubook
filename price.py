@@ -118,8 +118,8 @@ def graph_price(rate):
     prices = explicit_rate(rate)
     print(*map(math.floor, prices))
 
-def price_for_double_eco(total_avail, date:str=None):
-    """ Return the suggest price for a double eco according to total_avail 
+def priceDoubleStd(total_avail, date:str=None):
+    """ Return the suggest price for a double eco according to total_avail
     can be also according to <date>: dd/mm/yyyy"""
     dt_date = datetime.strptime(date, "%d/%m/%Y")
 
@@ -166,12 +166,12 @@ def price_for_double_eco(total_avail, date:str=None):
             assert result >= 40
             return result
 
-def price_for_triple_eco(total_avail, date:str=None):
+def priceTripleStd(total_avail, date:str=None):
     """ Return the suggest price for a triple eco according to total_avail 
     can be also according to <date>: dd/mm/yyyy"""
     date_ = datetime.strptime(date, "%d/%m/%Y")
     price = cost("g666506-d1071475", date_)  # ibis
-    price_double_eco = price_for_double_eco(total_avail, date)
+    price_double_eco = priceDoubleStd(total_avail, date)
     logging.debug(f"{date_} : {price}")
     if price == 0:
         result = price_double_eco * 1.15
@@ -182,6 +182,21 @@ def price_for_triple_eco(total_avail, date:str=None):
         return result * 1.15
 
     return result
+
+
+def matchPrice10Low(price: float, base=50):
+    """Decrease the price of 10% except if it’s between 50 and 60. (base and base+10)
+    Then apply a (price - 50) / 2 + 50
+    Utilisé surtout pour calculer le prix de la chambre single lorsque le prix est inférieur à 60
+    Utilisé pour calculer le prix d’une chambre en direct à partir de son prix OTA si inférieur au prix de base + 10
+    """
+    # TODO: to be test
+    if price <= base:
+        return round(price)
+    elif price < base + 10:
+        return round((price - base) / 2 + base)
+    else:
+        return round(price / 1.1)
 
 
 def test_calcul_price_increase_set():

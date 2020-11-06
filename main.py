@@ -17,7 +17,7 @@ import xmlrpc.client
 import logging
 
 
-from price import price_for_double_eco, price_for_triple_eco
+from price import priceDoubleStd, priceTripleStd, matchPrice10Low
 
 url = "https://wired.wubook.net/xrws/"
 
@@ -98,100 +98,6 @@ def sum_avail(avail, list_code=REAL_ROOMS):
     return result
 
 
-def update_price(room_code, date_price, connection, simulation=False):
-    """Update new price in the wubook server
-    If existing price in wubook "triple eco" ends with .99, then doesn’t modify price.
-    INPUT date_price: {<date>: <price>, ..}
-    To update, we need to call:
-        update_plan_prices(token, lcode, pid, dfrom, prices)
-        where prices = { <room_code> : [price1, price2, ...], ...}
-    In this function, prices = [price1, price2, ...]
-    
-    RETURN dates and prices that was not changed {<date>: <price>, ..} or None """
-
-    # Change de {<date>: <price>, ...} à {<date>: [<price1>, <price2>, ...], ...}
-    date_price_tuple = list(sorted(date_price.items(), key=lambda dico: datetime.strptime(dico[0], "%d/%m/%Y")))
-    days = len(date_price_tuple) - 1  # On exclu le dernier jour.
-    dfrom = date_price_tuple[0][0]
-    dto = (datetime.strptime(dfrom, "%d/%m/%Y") + timedelta(days=days)).strftime("%d/%m/%Y")
-    prices = [price for _, price in date_price_tuple]  # prices = [price1, price2, ...]
-
-    if date_price_tuple[-1][0] != dto:
-        raise Exception("Les dates ne sont pas continues pour mettre à jour les prix. Il doit manquer des dates: " + str(date_price_tuple))
-
-    # Prevent price modification if triple eco endswith .99
-    # On récupère les prix sur wubook
-    return_code, plan_prices = connection.server.fetch_plan_prices(connection.token, lcode, 0, dfrom, dto)
-    if return_code != 0:
-        raise ConnectionError(f"in update_price({room_code}, {date_price}, connection), error: {plan_prices}")
-
-    # On détermine les prix qui vont être modifiés
-    actual_room_prices = plan_prices[room_code]
-    modifs = dict()  # ne sert qu’à informer de ce qui a été modifié
-    for i in range(len(actual_room_prices)):
-        if prices[i] != actual_room_prices[i]:
-            date_tmp = (datetime.strptime(dfrom, "%d/%m/%Y") + timedelta(days=i)).strftime("%d/%m/%Y")
-            modifs[date_tmp] = prices[i]
-
-    # On évite de modifier les prix dont la triple éco fini par .99
-    triple_eco_prices = plan_prices["329670"]  # : [price1, price2, ...]
-    ignore = dict()  # ne sert qu’à informer de ce qui a été ignoré
-    for i in range(len(triple_eco_prices)):
-        if str(triple_eco_prices[i]).endswith(".99"):
-            prices[i] = plan_prices[room_code][i]
-            date_tmp = (datetime.strptime(dfrom, "%d/%m/%Y") + timedelta(days=i)).strftime("%d/%m/%Y")
-            ignore[date_tmp] = prices[i]
-            # on supprime ce qui a été modifié dans modifs
-            modifs.pop(date_tmp, None)
-    
-    # Call wubook function for update
-    if not simulation:
-        connection.server.update_plan_prices(connection.token, lcode, 0, dfrom, {room_code: prices})
-    
-    return ignore, modifs
-
-
-def update_price_automatic(connection, period=60, dstart=None, simulation=False):
-    """update price in the next period (in days)
-    and print ignore dates"""
-    if dstart:
-        dfrom_time = datetime.strptime(dstart, "%d/%m/%Y")
-    else:
-        dfrom_time = datetime.today()
-    dfrom = dfrom_time.strftime("%d/%m/%Y")
-    dto_time = dfrom_time + timedelta(days=period)
-    dto = dto_time.strftime("%d/%m/%Y")
-
-    logging.info(f"Mise à jour en cours: (start: {dfrom}, end: {dto})")
-
-    avail = get_avail(dfrom, dto, connection)
-    total_avail = sum_avail(avail)
-
-    # Actuellement, changer uniquement dstd, dblc, tstd est suffisant.
-    price_double_eco = dict()
-    price_double_balcon = dict()
-    price_triple_eco = dict()
-    for date, avail in total_avail.items():
-        price_double_eco[date] = round(price_for_double_eco(avail, date), 2)  # Détermine les nouvelles valeurs
-        price_double_balcon[date] = round(price_double_eco[date] * 1.15, 2)  # Balcon à 15% plus élevé.
-        price_triple = round(price_for_triple_eco(avail, date), 2)
-        logging.debug(f"{date}: price_double_eco = {price_double_eco[date]}")
-        logging.debug(f"{date}: price_triple = {price_triple}")
-        if price_triple < 54:
-            price_triple = 54
-        price_triple_eco[date] = price_triple
-    ignore = dict()
-    modifs = dict()
-    ignore["double_eco"], modifs["double_eco"] = update_price("329039", price_double_eco, connection, simulation=simulation)  # deco
-    ignore["double_balcon"], modifs["double_balcon"] = update_price("329667", price_double_balcon, connection, simulation=simulation)  # dblc
-    ignore["triple_eco"], modifs["triple_eco"] = update_price("329670", price_triple_eco, connection, simulation=simulation)  # triple
-
-    pprint(f"Dates ignorées: {ignore}")
-    pprint(f"Dates modifiées: {modifs}")
-    logging.info(f"Dates ignorées: {ignore}")
-    logging.info(f"Dates modifiées: {modifs}")
-    
-
 @dataclass
 class Connection:
     server : None
@@ -224,6 +130,74 @@ def main(days, simulation=False):
                     logging.warning("ProtocolError while realeasing token from wubook server: \n{e}")
                 else:
                     logging.info("Server disconnected")
+
+
+def update_price_automatic(connection, period=60, dstart=None, simulation=False):
+    """update price in the next period (in days)
+    and print ignore dates
+    
+    Il faut calculer sstd, sstdOTA, dstd, dstdOTA, tstd, tstdOTA. Les balcons sont de-facto a 15% plus cher. La kichenette est fixé au prix du dblc et la familiale est déjà fixé.
+    Comme il faut concurrencer les autres hôtels, il faut donc que le dstdOTA soit calculé en 1er.
+    En ayant le dstdOTA, on peut utiliser les fonctions (dans price.py): matchPrice10Low pour calculer dstd.
+    En re-appliquant matchPrice10Low sur dstd, on trouve le sstd. Et le dstd est lui-même le sstdOTA
+    Pour le triple, il faut de la même manière concurrencer en calculant d’abord le tstdOTA, puis appliquer matchPrice10Low pour trouver le tstd.
+    """
+    if dstart:
+        dfrom_time = datetime.strptime(dstart, "%d/%m/%Y")
+    else:
+        dfrom_time = datetime.today()
+    dfrom = dfrom_time.strftime("%d/%m/%Y")
+    dto_time = dfrom_time + timedelta(days=period)
+    dto = dto_time.strftime("%d/%m/%Y")
+
+    logging.info(f"Mise à jour en cours: (start: {dfrom}, end: {dto})")
+
+    avail = get_avail(dfrom, dto, connection)
+    total_avail = sum_avail(avail)
+
+    prices_dstdOTA = dict()  # {<date>: price, ...}
+    prices_tstdOTA = dict()
+    for date, avail in total_avail.items():
+        prices_dstdOTA[date] = round(priceDoubleStd(avail, date), 2)
+        prices_tstdOTA[date] = round(priceTripleStd(avail, date), 2)
+
+    update_price(room_to_code["dstd"], prices_dstdOTA, connection, simulation=simulation, OTA=True)
+    update_price(room_to_code["dstd"], {date: matchPrice10Low(prices_dstdOTA[date]) for date in prices_dstdOTA}, connection, simulation=simulation, OTA=False)
+    update_price(room_to_code["sstd"], {date: matchPrice10Low(matchPrice10Low(prices_dstdOTA[date])) for date in prices_dstdOTA}, connection, simulation=simulation, OTA=True)
+    update_price(room_to_code["sstd"], {date: matchPrice10Low(prices_dstdOTA[date]) for date in prices_dstdOTA}, connection, simulation=simulation, OTA=False)
+    update_price(room_to_code["tstd"], prices_tstdOTA, connection, simulation=simulation, OTA=True)
+    update_price(room_to_code["tstd"], {date: matchPrice10Low(prices_tstdOTA[date], base=60) for date in prices_dstdOTA}, connection, simulation=simulation, OTA=False)
+
+
+def update_price(room_code, date_price, connection, simulation=False, OTA=True):
+    """Update new price in the wubook server
+    INPUT date_price: {<date>: <price>, ..}
+    To update, we need to call:
+        update_plan_prices(token, lcode, pid, dfrom, prices)
+        where prices = { <room_code> : [price1, price2, ...], ...}
+    In this function, prices = [price1, price2, ...]
+    
+    RETURN """
+
+    # Change de {<date>: <price>, ...} à {<date>: [<price1>, <price2>, ...], ...}
+    date_price_tuple = list(sorted(date_price.items(), key=lambda dico: datetime.strptime(dico[0], "%d/%m/%Y")))
+    days = len(date_price_tuple) - 1  # On exclu le dernier jour.
+    dfrom = date_price_tuple[0][0]
+    dto = (datetime.strptime(dfrom, "%d/%m/%Y") + timedelta(days=days)).strftime("%d/%m/%Y")
+    prices = [price for _, price in date_price_tuple]  # prices = [price1, price2, ...]
+
+    if date_price_tuple[-1][0] != dto:
+        raise Exception("Les dates ne sont pas continues pour mettre à jour les prix. Il doit manquer des dates: " + str(date_price_tuple))
+
+    # Call wubook function for update
+    if not simulation:
+        if OTA:
+            connection.server.update_plan_prices(connection.token, lcode, 174018, dfrom, {room_code: prices})
+        else: 
+            connection.server.update_plan_prices(connection.token, lcode, 0, dfrom, {room_code: prices})
+    
+    is_ota = "OTA" if OTA else ""
+    logging.info(f"{type_room[room_code]}{is_ota}: {date_price}")
 
 
 def get_prices_avail_today():
@@ -266,7 +240,7 @@ if __name__ == "__main__":
 
     # arguments = docopt(__doc__, version="1.0")
     # days = int(arguments.get("[<days>]", 60))
-    main(1, simulation=True)
+    main(1, simulation=False)
 
 def test_sum_avail():
     # TODO
