@@ -163,8 +163,8 @@ def update_price_automatic(connection, period=60, dstart=None, simulation=False)
 
     update_price(room_to_code["dstd"], prices_dstdOTA, connection, simulation=simulation, OTA=True)
     update_price(room_to_code["dstd"], {date: matchPrice10Low(prices_dstdOTA[date]) for date in prices_dstdOTA}, connection, simulation=simulation, OTA=False)
-    update_price(room_to_code["sstd"], {date: matchPrice10Low(matchPrice10Low(prices_dstdOTA[date])) for date in prices_dstdOTA}, connection, simulation=simulation, OTA=True)
-    update_price(room_to_code["sstd"], {date: matchPrice10Low(prices_dstdOTA[date]) for date in prices_dstdOTA}, connection, simulation=simulation, OTA=False)
+    update_price(room_to_code["sstd"], {date: matchPrice10Low(prices_dstdOTA[date]) for date in prices_dstdOTA}, connection, simulation=simulation, OTA=True)
+    update_price(room_to_code["sstd"], {date: matchPrice10Low(matchPrice10Low(prices_dstdOTA[date])) for date in prices_dstdOTA}, connection, simulation=simulation, OTA=False)
     update_price(room_to_code["tstd"], prices_tstdOTA, connection, simulation=simulation, OTA=True)
     update_price(room_to_code["tstd"], {date: matchPrice10Low(prices_tstdOTA[date], base=60) for date in prices_dstdOTA}, connection, simulation=simulation, OTA=False)
 
