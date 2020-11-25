@@ -1,3 +1,7 @@
+import sys, os
+
+C = os.path.abspath(os.path.dirname(__file__))
+
 from selectorlib import Extractor
 import requests 
 from time import sleep
@@ -51,7 +55,7 @@ def buildUrlBooking(datefrom, dateto=None, ibis=False):
 import csv
 
 def main(days=6*30):
-    with open("data.csv", mode="w", newline="") as price_file:
+    with open(os.path.join(C, "data.csv"), mode="w", newline="") as price_file:
         fieldnames = ["date", "poste", "ibis", "campanile", "casabella"]
         writer = csv.DictWriter(price_file,  fieldnames=fieldnames)
         writer.writeheader()
@@ -64,7 +68,7 @@ def main(days=6*30):
         ...
         ]
         """
-        with open("data.csv", mode="a", newline="") as price_file:
+        with open(os.path.join(C, "data.csv"), mode="a", newline="") as price_file:
             fieldnames = ["date", "poste", "ibis", "campanile", "casabella"]
             writer = csv.DictWriter(price_file,  fieldnames=fieldnames)
             for day in datas:

@@ -1,3 +1,7 @@
+import sys, os
+
+C = os.path.abspath(os.path.dirname(__file__))
+
 from os import access
 import sys, os
 import math
@@ -125,7 +129,7 @@ def priceDoubleStd(total_avail, date:str=None):
     # 10 < ... < 20: on prend casabella
     # 20 < .. : on prend casabella + 20%
     # Et on ajoute le % des dates spéciales
-    with open(os.path.join("HotelRates", "data.csv"), mode="r") as price_file:
+    with open(os.path.join(C, "HotelRates", "data.csv"), mode="r") as price_file:
         csv_reader = csv.DictReader(price_file)
         for row in csv_reader:
             if row["date"] == date:
