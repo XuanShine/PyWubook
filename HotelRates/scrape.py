@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from pprint import pprint
 
 # Create an Extractor by reading from the YAML file
-e = Extractor.from_yaml_file('booking.yml')
+e = Extractor.from_yaml_file(os.path.join(C, 'booking.yml'))
 
 def scrape(url):    
     headers = {
@@ -96,4 +96,5 @@ def main(days=6*30):
     else:
         writeInFile(result_temp)
 
-main()
+if __name__ == "__main__":
+    main(30*3)
