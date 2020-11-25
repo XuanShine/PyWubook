@@ -1,12 +1,15 @@
-import sys
+from os import access
+import sys, os
 import math
+import statistics
 from dataclasses import dataclass
 from datetime import datetime, date
-from HotelRates.xotelo import get_price, ibis_budget_mouans, cost
+from HotelRates.xotelo import ibis_budget_mouans, cost
 from statistics import mean
 import logging
+import csv
 
-TOTAL_ROOMS = 27
+TOTAL_ROOMS = 22
 # TODO: server can change the availlability of TOTAL_ROOMS
 
 special_dates = {  # augmentation en % : 50% => 50
@@ -30,9 +33,9 @@ special_dates = {  # augmentation en % : 50% => 50
     # Mariage
     "10/10/2020" : 10,
     # Marathon ?
-    "07/11/2020": 20,
+    "07/11/2020": 15,
     # Mariage 15/13/2020
-    "15/12/2020": 30,
+    "15/12/2020": 15,
     # VTT dans Grasse
     # ASA GRASSE 2021
     "03/04/2021": 50,
@@ -64,15 +67,6 @@ low_season = Rate(
 # congres = Rate()
 # saturday = Rate()  # mariage
 # christmas_new_year = Rate()
-def min_price_month(month):
-    today = datetime.today()
-    year = today.year if month >= today.month else today.year + 1
-    price = get_price(ibis_budget_mouans, datetime(year, month, 25, 0, 0, 0), datetime(year, month, 26, 0, 0, 0))
-    print(f"price({month}/{year}) = {price}")
-    return 0.95 * mean(list( 
-            filter(lambda x: x >= 50,
-                   price)) + [55])
-
 
 switch_rate = {
     1: Rate(n_rooms=25, n_room_increase=2, min_price=47, increase=None, max_price=84),  # 44 48 53 58 64 70 77 85 94 103 114 125 138
@@ -125,65 +119,120 @@ def priceDoubleStd(total_avail, date:str=None):
     can be also according to <date>: dd/mm/yyyy"""
     dt_date = datetime.strptime(date, "%d/%m/%Y")
 
-    if date in special_dates:
-        ### Le prix selon les dates spéciaux.
-        rate = special_dates[date]
-        if isinstance(rate, Rate):
-            result_rate = calcul_price(total_avail=total_avail, rate=rate)
+    # Nouvelle façon: 
+    # < 5 chambres: on prend le moins cher - 1€
+    # 5 < ... < 10: on prend la moyenne entre ibis et campanile
+    # 10 < ... < 20: on prend casabella
+    # 20 < .. : on prend casabella + 20%
+    # Et on ajoute le % des dates spéciales
+    with open(os.path.join("HotelRates", "data.csv"), mode="r") as price_file:
+        csv_reader = csv.DictReader(price_file)
+        for row in csv_reader:
+            if row["date"] == date:
+                ibis = row["ibis"]
+                campanile = row["campanile"]
+                casabella = row["casabella"]
+                break
         else:
-            rate = switch_rate.get(dt_date.month, low_season)
-            add_percent = special_dates[date]
-            result_rate = calcul_price(total_avail=total_avail, rate=rate, add_percent=add_percent)
-    else:
-        ### Déterminer le prix selon les TARIFS saisonniers
-        rate = switch_rate.get(dt_date.month, low_season)
-        result_rate = calcul_price(total_avail=total_avail, rate=rate)
+            raise(Exception(f"Dans price.py fonction priceDoubleStd, pas de date {date} dans le fichier data.csv"))
+    # int les trois pour virer ce qui sert à rien:
+    valid_value = []
+    maxi = 70
+    try:
+        ibis = int(ibis)
+        valid_value.append(ibis)
+        maxi = max(maxi, ibis)
+    except ValueError:
+        pass
+    try:
+        campanile = int(campanile)
+        valid_value.append(campanile)
+        maxi = max(maxi, campanile)
+    except ValueError:
+        pass
+    try:
+        casabella = int(casabella)
+        maxi = max(maxi, casabella)
+    except ValueError:
+        pass
+    if not valid_value:
+        valid_value = [55]
 
-    ### Déterminer le prix selon les autres hôtels ###
-    date_ = datetime.strptime(date, "%d/%m/%Y")
-    prices_low = (cost("g1380878-d2184159", date_), cost(ibis_budget_mouans, date_), cost("g662774-d488551", date_))  # poste, ibis, campanile
-    price_best_western = cost("g187224-d248537", date_)
-    logging.info(f"{date}: {prices_low} (poste, ibis, campanile)")
-    price = max(min(price for price in prices_low if price != 0), 50)
     taux_occupation = 1 - total_avail/TOTAL_ROOMS
-    if taux_occupation < 0.3:  # < 10%
-        result = price - 2
+    if taux_occupation < 0.15:
+        res = min(valid_value) - 1
+    elif taux_occupation < 0.3:  
+        res = statistics.mean(valid_value)
     elif taux_occupation < 0.6:  
-        result = price
+        res = maxi
     elif taux_occupation < 1:
-        result = max(price_best_western, 90) * 0.85
+        res = maxi * 1.20
     else:
-        result = max(price_best_western, 90)
+        res = max(maxi, 90)
+    return res * (1 + special_dates.get(date, 0) / 100)
+    #  
+    # if date in special_dates:
+    #     ### Le prix selon les dates spéciaux.
+    #     rate = special_dates[date]
+    #     if isinstance(rate, Rate):
+    #         result_rate = calcul_price(total_avail=total_avail, rate=rate)
+    #     else:
+    #         rate = switch_rate.get(dt_date.month, low_season)
+    #         add_percent = special_dates[date]
+    #         result_rate = calcul_price(total_avail=total_avail, rate=rate, add_percent=add_percent)
+    # else:
+    #     ### Déterminer le prix selon les TARIFS saisonniers
+    #     rate = switch_rate.get(dt_date.month, low_season)
+    #     result_rate = calcul_price(total_avail=total_avail, rate=rate)
+
+    # def calculPriceWithXotelo():
+    #     ### Déterminer le prix selon les autres hôtels avec xotelo ###
+    #     date_ = datetime.strptime(date, "%d/%m/%Y")
+    #     prices_low = (cost("g1380878-d2184159", date_), cost(ibis_budget_mouans, date_), cost("g662774-d488551", date_))  # poste, ibis, campanile
+    #     price_best_western = cost("g187224-d248537", date_)
+    #     logging.info(f"{date}: {prices_low} (poste, ibis, campanile)")
+    #     price = max(min(price for price in prices_low if price != 0), 50)
+    #     taux_occupation = 1 - total_avail/TOTAL_ROOMS
+    #     if taux_occupation < 0.3:  # < 10%
+    #         return price - 2
+    #     elif taux_occupation < 0.6:  
+    #         return price
+    #     elif taux_occupation < 1:
+    #         return max(price_best_western, 90) * 0.85
+    #     else:
+    #         return max(price_best_western, 90)
     
-    logging.info(f"prix rate, prix autres hotels: {result_rate} / {result}")
-    if date in special_dates:
-        res = max(result, result_rate)
-        assert res >= 40
-        return res
-    else:
-        if result == 0:
-            assert result_rate >= 40
-            return result_rate
-        else:
-            assert result >= 40
-            return result
+    # result = calculPriceWithXotelo()
+
+    # logging.info(f"prix rate, prix autres hotels: {result_rate} / {result}")
+    # if date in special_dates:
+    #     res = max(result, result_rate)
+    #     assert res >= 40
+    #     return res
+    # else:
+    #     if result == 0:
+    #         assert result_rate >= 40
+    #         return result_rate
+    #     else:
+    #         assert result >= 40
+    #         return result
 
 def priceTripleStd(total_avail, date:str=None):
     """ Return the suggest price for a triple eco according to total_avail 
     can be also according to <date>: dd/mm/yyyy"""
-    date_ = datetime.strptime(date, "%d/%m/%Y")
-    price = cost("g666506-d1071475", date_)  # ibis
-    price_double_eco = priceDoubleStd(total_avail, date)
-    logging.debug(f"{date_} : {price}")
-    if price == 0:
-        result = price_double_eco * 1.15
-    else:
-        result = max(price_double_eco, price)
-    assert result >= 40
-    if date in special_dates:
-        return result * 1.15
+    # date_ = datetime.strptime(date, "%d/%m/%Y")
+    # price = cost("g666506-d1071475", date_)  # ibis
+    # price_double_eco = priceDoubleStd(total_avail, date)
+    # logging.debug(f"{date_} : {price}")
+    # if price == 0:
+    #     result = price_double_eco * 1.15
+    # else:
+    #     result = max(price_double_eco, price)
+    # assert result >= 40
+    # if date in special_dates:
+    #     return result * 1.15
 
-    return result
+    return priceDoubleStd(total_avail, date) * 1.1
 
 
 def matchPrice10Low(price: float, base=50):
