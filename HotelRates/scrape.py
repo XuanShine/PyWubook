@@ -4,15 +4,18 @@ C = os.path.abspath(os.path.dirname(__file__))
 
 from selectorlib import Extractor
 import requests 
+from requests.exceptions import Timeout
 from time import sleep
 import csv
 from datetime import datetime, timedelta
 from pprint import pprint
+import logging
+
 
 # Create an Extractor by reading from the YAML file
 e = Extractor.from_yaml_file(os.path.join(C, 'booking.yml'))
 
-def scrape(url):    
+def scrape(url, retry=0):    
     headers = {
         'Connection': 'keep-alive',
         'Pragma': 'no-cache',
@@ -28,8 +31,13 @@ def scrape(url):
     }
 
     # Download the page using requests
-    print("Downloading %s"%url)
-    r = requests.get(url, headers=headers)
+    logging.info("Downloading %s"%url)
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+    except Timeout:
+        if retry % 5 == 0:
+            sleep(60*5)  # après 5 tentatives, faire une pause de 5 min.
+        return scrape(url, retry+1)
     # Pass the HTML of the page and create 
     return e.extract(r.text,base_url=url)
 
@@ -59,6 +67,7 @@ def main(days=6*30):
         fieldnames = ["date", "poste", "ibis", "campanile", "casabella"]
         writer = csv.DictWriter(price_file,  fieldnames=fieldnames)
         writer.writeheader()
+        logging.debug("scrape.py fichier csv entête écrit")
 
     def writeInFile(datas):
         """
@@ -78,8 +87,10 @@ def main(days=6*30):
     for day in range(0, days):
         date = (datetime.today() + timedelta(days=day)).strftime("%d/%m/%Y")
         res2 = {"date": date}
+        logging.info("début scrape")
         data = scrape(buildUrlBooking(date))
         data2 = scrape(buildUrlBooking(date, ibis=True))
+        logging.info("fin scrape")
         for data in data["hotels"] + data2["hotels"]:
             if "Poste" in data["name"]:
                 res2["poste"] = int(data['price'].lstrip("€\xa0"))
