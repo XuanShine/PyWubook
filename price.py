@@ -173,7 +173,8 @@ def priceDoubleStd(total_avail, date:str=None):
         res = maxi * 1.20
     else:
         res = max(maxi, 90)
-    return res * (1 + special_dates.get(date, 0) / 100)
+    # return res * (1 + special_dates.get(date, 0) / 100)
+    return res * (1 + special_dates.get(date, 0) / 100) * 0.15
     #  
     # if date in special_dates:
     #     ### Le prix selon les dates spéciaux.
