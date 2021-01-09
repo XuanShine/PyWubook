@@ -173,8 +173,10 @@ def priceDoubleStd(total_avail, date:str=None):
         res = maxi * 1.20
     else:
         res = max(maxi, 90)
-    # return res * (1 + special_dates.get(date, 0) / 100)
-    return res * (1 + special_dates.get(date, 0) / 100) * 0.15
+
+    price = res * (1 + special_dates.get(date, 0) / 100) * 1.15
+    assert price >= 45
+    return price
     #  
     # if date in special_dates:
     #     ### Le prix selon les dates spéciaux.
@@ -236,8 +238,9 @@ def priceTripleStd(total_avail, date:str=None):
     # assert result >= 40
     # if date in special_dates:
     #     return result * 1.15
-
-    return priceDoubleStd(total_avail, date) * 1.1
+    price = priceDoubleStd(total_avail, date) * 1.1
+    assert price >= 45
+    return price
 
 
 def matchPrice10Low(price: float, base=50):
