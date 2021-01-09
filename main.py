@@ -158,8 +158,8 @@ def update_price_automatic(connection, period=60, dstart=None, simulation=False)
     prices_dstdOTA = dict()  # {<date>: price, ...}
     prices_tstdOTA = dict()
     for date, avail in total_avail.items():
-        prices_dstdOTA[date] = round(priceDoubleStd(avail, date), 2)
-        prices_tstdOTA[date] = round(priceTripleStd(avail, date), 2)
+        prices_dstdOTA[date] = round(priceDoubleStd(avail, date))
+        prices_tstdOTA[date] = round(priceTripleStd(avail, date))
 
     update_price(room_to_code["dstd"], prices_dstdOTA, connection, simulation=simulation, OTA=True)
     update_price(room_to_code["dstd"], {date: matchPrice10Low(prices_dstdOTA[date]) for date in prices_dstdOTA}, connection, simulation=simulation, OTA=False)
@@ -240,7 +240,7 @@ if __name__ == "__main__":
 
     # arguments = docopt(__doc__, version="1.0")
     # days = int(arguments.get("[<days>]", 60))
-    main(1, simulation=False)
+    main(5*30, simulation=False)
 
 def test_sum_avail():
     # TODO
